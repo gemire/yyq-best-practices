@@ -1,0 +1,1 @@
+在数据库连接url后加上?useUnicode=true&characterEncoding=UTF-8

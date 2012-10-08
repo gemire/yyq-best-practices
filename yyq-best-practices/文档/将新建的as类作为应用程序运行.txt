@@ -1,0 +1,3 @@
+例如要让Flex将main包下的DAETest.as编译为swf文件，可进行如下操作：
+在workspace项目目录下的.actionScriptProperties的文件中的<applications>节点中添加<application path="main/DAETest.as"/>节点，
+既可以将as文件设为可运行程序，在eclipse中运行此文件。

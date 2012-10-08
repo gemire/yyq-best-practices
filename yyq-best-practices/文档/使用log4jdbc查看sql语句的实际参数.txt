@@ -1,0 +1,11 @@
+1：添加log4jdbc的jar包，如：log4jdbc4-1.2beta2.jar
+2：在dataSource的url中加入log4jdbc协议，如jdbc:mysql:改为jdbc:log4jdbc:mysql:
+3：dataSource的driverClassName改为net.sf.log4jdbc.DriverSpy
+4：在log4j.properties中加入如下配置：
+log4j.logger.jdbc.sqlonly=OFF
+log4j.logger.jdbc.sqltiming=INFO
+log4j.logger.jdbc.audit=OFF
+log4j.logger.jdbc.resultset=OFF
+log4j.logger.jdbc.connection=OFF
+
+配好以后，就可以关掉hibernate的hibernate.show_sql参数了（如果有开的话）

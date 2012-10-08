@@ -1,0 +1,62 @@
+1apache+4tomcat集群配置：
+
+安装apache，在四台不同的机子上安装tomcat。
+将mod_jk-1.2.30-httpd-2.2.3.so拷贝到apache的modules目录下，
+在apache的conf目录下的httpd.conf文件最后加入以下代码：
+
+LoadModule jk_module modules/mod_jk-1.2.30-httpd-2.2.3.so
+JkWorkersFile conf/workers.properties
+JkLogFile logs/mod_jk.log
+JkMount /*     controller
+
+在conf目录下新建workers.properties文件，文件内容如下：
+
+worker.list = controller,tomcat1,tomcat2,tomcat3,tomcat4   #server 列表
+#========tomcat1========
+worker.tomcat1.port=8009         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat1.host=localhost    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat1.type=ajp13
+worker.tomcat1.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========tomcat2========
+worker.tomcat2.port=8009         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat2.host=192.168.53.28    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat2.type=ajp13
+worker.tomcat2.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========tomcat3========
+worker.tomcat3.port=8009         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat3.host=192.168.53.29    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat3.type=ajp13
+worker.tomcat3.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========tomcat4========
+worker.tomcat4.port=8009         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat4.host=192.168.53.30    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat4.type=ajp13
+worker.tomcat4.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========controller,负载均衡控制器========
+worker.controller.type=lb
+worker.controller.balanced_workers=tomcat1,tomcat2,tomcat3,tomcat4   #指定分担请求的tomcat
+
+其中host根据实际情况修改，若想同一用户固定转发给同一tomcat处理，在workers.properties文件最后再加入如下一行：
+worker.controller.sticky_session=true
+
+配置tomcat：
+打开tomcat目录下的conf文件夹下的server.xml：
+将<Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">的注释移到下面两行的<Engine name="Catalina" defaultHost="localhost">上面。
+
+====================================================================================================
+====================================================================================================
+
+测试环境：
+①本机tomcat、本机mysql数据库
+②本机apache、本机tomcat、本机mysql数据库，另外3个tomcat分别装在另外3台机子上，总共1apache+4tomcat
+
+先是测试一个只有简单java代码的页面，总共发送10000个请求(-n 10000) ，并每次发送50个请求(-c 50)。测试结果如下：
+①ab -n 10000 -c 50 http://localhost:8080/test.jsp，总共耗时5.531 seconds，每秒处理请求数1807.91。
+②ab -n 10000 -c 50 http://localhost/test.jsp，总共耗时5.453 seconds，每秒处理请求数1833.81。
+
+接着测试一个有数据库查询分页及带有CKEditor插件的复杂页面，测试条件也是总共发送10000个请求(-n 10000) ，并每次发送50个请求(-c 50)。测试结果如下：
+①ab -n 10000 -c 50 http://localhost:8080/YYQ/feedback/feedback!listFeedback.action，总共耗时56.813 seconds，每秒处理请求数176.02。
+②ab -n 10000 -c 50 http://localhost/YYQ/feedback/feedback!listFeedback.action，总共耗时21.156 seconds，每秒处理请求数472.67。
+
+结论：web服务器集群在处理静态页面时与单一web服务器性能无明显提高，
+但在处理动态页面时使用web服务器集群比只用单一web服务器性能得到明显提高。

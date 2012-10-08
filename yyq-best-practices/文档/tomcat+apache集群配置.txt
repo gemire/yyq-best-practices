@@ -1,0 +1,63 @@
+1：下载apache_2.2.14-win32-x86-openssl-0.9.8k.msi、mod_jk-1.2.28-httpd-2.2.3.so（tomcat与apache整合插件，tomcat网站上下载）、
+tomcat解压版apache-tomcat-6.0.20.zip。安装apache，解压tomcat。
+2：在cmd下先进入apache的bin目录，执行：httpd -k install安装apache服务，然后试试apache能否正常启动。
+3：配置apache：
+将mod_jk-1.2.28-httpd-2.2.3.so拷贝到apache的modules目录下，
+然后在apache的conf目录下的httpd.conf文件的最后加入如下代码：
+LoadModule jk_module modules/mod_jk-1.2.28-httpd-2.2.3.so
+JkWorkersFile conf/workers.properties
+JkLogFile logs/mod_jk.log
+JkMount /*.jsp controller
+JkMount /servlet/* controller
+JkMount /*.action controller
+JkMount /dwr/* controller
+# JkMount /*     controller
+在conf目录下建立一个名为workers.properties的文件，文件代码如下：
+worker.list = controller,tomcat1,tomcat2   #server 列表
+#========tomcat1========
+worker.tomcat1.port=8001         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat1.host=localhost    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat1.type=ajp13
+worker.tomcat1.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========tomcat2========
+worker.tomcat2.port=8002         #ajp13 端口号，在tomcat下server.xml配置,默认8009
+worker.tomcat2.host=localhost    #tomcat的主机地址，如不为本机，请填写ip地址
+worker.tomcat2.type=ajp13
+worker.tomcat2.lbfactor = 1      #server的加权比重，值越高，分得的请求越多
+#========controller,负载均衡控制器========
+worker.controller.type=lb
+worker.controller.balanced_workers=tomcat1,tomcat2   #指定分担请求的tomcat
+worker.controller.sticky_session=true
+4：配置tomcat1：
+将<Server port="8005" shutdown="SHUTDOWN">改为<Server port="8003" shutdown="SHUTDOWN">
+将<Connector port="8080" protocol="HTTP/1.1" 
+               connectionTimeout="20000" 
+               redirectPort="8443" />注释掉，因为两个tomcat运行在同一台电脑上，都使用8080端口会冲突，两个tomcat如果不在同一台电脑上时则此处不必注释。
+将<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />改为<Connector port="8001" protocol="AJP/1.3" redirectPort="8443" />
+将<Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">的注释去掉，注意标签的闭合。
+5：配置tomcat2：tomcat2的配置与tomcat1类似。注意断口号。
+将<Server port="8005" shutdown="SHUTDOWN">改为<Server port="8004" shutdown="SHUTDOWN">
+将<Connector port="8080" protocol="HTTP/1.1" 
+               connectionTimeout="20000" 
+               redirectPort="8443" />注释掉，因为两个tomcat运行在同一台电脑上，都使用8080端口会冲突，两个tomcat如果不在同一台电脑上时则此处不必注释。
+将<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />改为<Connector port="8002" protocol="AJP/1.3" redirectPort="8443" />
+将<Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">的注释去掉，注意标签的闭合。
+6：测试：
+运行tomcat1、2（先配置环境变量JAVA_HOME，然后分别执行tomcat/bin下的startup.bat），然后运行apache。
+新建test.jsp，代码如下：
+<%
+System.out.println("SessionID:"+session.getId()+new java.util.Date());
+%>
+Server Info:
+<%
+out.println(request.getServerName()+" : "+request.getServerPort()+"<br>");
+%>
+将test.jsp拷贝到两个tomcat的webapps\ROOT目录下，在IE中访问http://localhost:8080/test.jsp并不断刷新就可以轮流在两个tomcat
+的控制台上看到效果。
+在控制台停止tomcat的方法：ctrl+C
+
+
+
+
+
+

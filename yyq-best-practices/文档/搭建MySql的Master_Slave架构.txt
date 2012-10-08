@@ -1,0 +1,51 @@
+1：在Master的my.ini文件的末尾加入以下代码：
+
+#Master start
+#日志输入地址 主要同步使用
+log-bin=F:\Program Files\MySQL\MySQL Server 5.5\MasterLog\masterLog
+#同步数据库
+binlog-do-db=ms
+#主机id 不能和从机id重复
+server-id=1
+#Master end
+
+如果mysql服务不能启动，检查一下MasterLog文件夹是否存在。
+
+2：在Master主机执行如下代码建立一个用户并赋予相应权限用于Slave复制：
+GRANT REPLICATION SLAVE ON *.* TO 'slave'@'192.168.53.25' IDENTIFIED BY 'yyq'
+
+以下是Slave端：
+3：将Master数据库中需要同步的表导出，并导入到Slave数据库中。
+
+4：在Slave的my.ini文件的末尾加入如下代码：
+
+#Slave start
+#从机id,区别于主机id
+server-id=2
+#需要同步的数据库
+replicate-do-db=ms
+#启用从库日志，这样可以进行链式复制
+log-slave-updates
+#从库是否只读，0表示可读写，1表示只读
+read-only=1
+#Slave end
+
+注意：在mysql5.5.5中，不能将Master主机的信息配在my.ini文件中，否则mysql服务无法正常启动。
+
+5：在cmd里登陆mysql，如：mysql -uroot -pyyq（即：mysql -u用户名 -p密码）
+
+6：设置Master主机：
+CHANGE MASTER TO MASTER_HOST='192.168.53.9', MASTER_USER='slave', MASTER_PASSWORD='yyq',MASTER_LOG_FILE='masterLog.000001',MASTER_LOG_POS=107;
+
+如果碰到以下问题：
+Could not initialize master info structure; more error messages can be found in the MySQL error log
+删除mysql数据目录，如C:\Documents and Settings\All Users\Application Data\MySQL\MySQL Server 5.5\data下的
+master.info和relay-log.info文件，重新启动mysql。
+
+7：启动Salve服务。
+slave start;
+
+相关的mysql命令：
+FLUSH TABLES WITH READ LOCK;锁定表；
+show master status;显示Master机状态；
+UNLOCK TABLES;解锁表；

@@ -1,0 +1,2 @@
+1：执行java -jar lombok.jar安装lombok
+3：将lombok.jar加入项目classpath

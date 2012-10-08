@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/jms
+	http://www.springframework.org/schema/jms/spring-jms.xsd
+	http://cxf.apache.org/jaxws
+	http://cxf.apache.org/schemas/jaxws.xsd
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	
+	<!-- 使用H2嵌入式数据库，这里配置TCP Server随应用一起启动。
+	<bean id="h2TcpServer" class="h2db.H2TcpServer"/>
+	<bean id="dataSource" depends-on="h2TcpServer"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="org.h2.Driver"></property>
+		<property name="url" value="jdbc:h2:tcp://localhost/D:/yyq"></property>
+		<property name="username" value="yyq"></property>
+		<property name="password" value="yyq"></property>
+	</bean>
+	 -->
+	
+	<!-- 定义受环境影响易变的变量 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driver}">
+		</property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+				<prop key="hibernate.generate_statistics">${hibernate.generate_statistics}</prop>
+			</props>
+		</property>
+		<property name="packagesToScan" value="*.pojo"/>
+	</bean>
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory"><ref local="sessionFactory"/></property>
+	</bean>
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<bean id="joinInfo" class="com.yyq.orm.JoinInfo">
+		<constructor-arg ref="sessionFactory"/>
+	</bean>
+	<!-- 
+	<bean id="commonDao" class="com.yyq.dao.CommonDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	 -->
+	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<!-- 有context:component-scan时不需要
+	<context:annotation-config/>
+	 -->
+	<context:component-scan base-package="*.dao"/>
+	
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${jms.brokerURL}"/>
+	</bean>
+	<bean id="jmsUtil" class="com.yyq.jms.JmsUtil"/>
+
+  <!-- Spring JMS Template -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory"/>
+		<property name="defaultDestination" ref="defaultDestination"/>
+	</bean>
+
+	<!-- 发送消息的目的地（一个队列） -->
+	<bean id="defaultDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 设置消息队列的名字 -->
+		<constructor-arg index="0" value="JmsQueue"/>
+	</bean>
+
+	<!-- Jms消息监听Bean -->
+	<bean id="messageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.yyq.jms.JmsUtil"/>
+		</constructor-arg>
+		<property name="defaultListenerMethod" value="onMessage"/>
+	</bean>
+
+	<!-- Jms消息监听容器 -->
+	<bean id="listenerContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="defaultDestination" />
+		<property name="messageListener" ref="messageListener" />
+	</bean>
+	
+	<!-- 
+	<bean id="clientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="webService.WebServiceTest"/>
+		<property name="address" value="http://localhost:8080/YYQ/services/WebServiceTest"/>
+	</bean>
+	 -->
+	 
+	 <!-- 这么写才能利用spring的依赖注入 -->
+	<bean id="webServiceTest" class="webService.WebServiceTest"/>
+	<jaxws:endpoint id="WebServiceTest" implementor="#webServiceTest" address="/WebServiceTest" />
+	
+	
+	<security:http auto-config="true">
+		<security:custom-filter before="FORM_LOGIN_FILTER" ref="captchaFilter"/>
+		<!-- 如果系统对安全性的要求高，使用SSL协议是必要的，因为改进了用户认证系统，暂不使用https -->
+		<security:intercept-url pattern="/login.jsp"/><!-- requires-channel="https" -->
+		<security:intercept-url pattern="/userManage!*.action" access="ROLE_ADMIN"/>
+		<security:intercept-url pattern="/dept!*.action" access="ROLE_DEPT"/>
+		<security:intercept-url pattern="/sale!*.action" access="ROLE_SALE"/>
+		<security:intercept-url pattern="/common!*.action" access="ROLE_LOGIN"/>
+		<security:form-login login-page="/login.jsp" default-target-url="/welcome.jsp" always-use-default-target="true" authentication-failure-url="/login.jsp?login_error=1"/>
+		<security:logout logout-success-url="/login.jsp"/>
+	</security:http>
+	
+	<bean id="captchaFilter" class="com.yyq.security.CaptchaFilter">
+		<property name="captchaFailureUrl" value="/YYQ/login.jsp?login_error=2"/>
+		<property name="authenticationFailureHandler">
+			<bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+				<property name="defaultFailureUrl" value="/login.jsp?login_error=1"/>
+			</bean>
+		</property>
+		<property name="authenticationSuccessHandler">
+			<bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+				<property name="defaultTargetUrl" value="/welcome.jsp"/>
+			</bean>
+		</property>
+		<property name="authenticationManager" ref="ssa-manager"/>
+	</bean>
+	<bean id="requestHelper" class="com.yyq.context.RequestHelper" scope="session">
+		<!-- 如果想将session范围的对象注入到一个非session范围的对象中，需要加入一个代理对象 -->
+		<aop:scoped-proxy/>
+	</bean>
+	<bean id="userDetailsService" class="com.yyq.security.UserDetailsServiceImpl"/>
+	<security:authentication-manager alias="ssa-manager">
+		<security:authentication-provider user-service-ref="userDetailsService">
+		<!-- <security:password-encoder hash="md5"/> -->
+		<!-- 
+		<security:jdbc-user-service data-source-ref="dataSource"
+			users-by-username-query="select u.username, 1, u.enabled from user u where u.username=?"
+			authorities-by-username-query="select u.username as username, a.authority as authority from (select id,username from user where username=?) as u join authoritySet al on u.id = al.uid join authority a on a.id = al.aid"/>
+		 -->
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+	<!-- DWR类扫描 -->
+	<context:component-scan base-package="dwr"/>
+	
+	<!-- jsf控件扫描 -->
+	<context:component-scan base-package="jsfAction"/>
+	
+	<!-- struts2Action扫描 加入了struts2-spring-plugin包无需扫描
+	<context:component-scan base-package="action"/>
+	 -->
+</beans>

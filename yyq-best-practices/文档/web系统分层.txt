@@ -1,0 +1,18 @@
+标准的JavaEE web系统应该分为四层：视图层、控制器层、业务层、数据访问层；
+传统的MVC架构在S2SH中，V即jsp，C即Action，M即Dao，
+而标准的JavaEE web系统分层即在Action层和Dao层之间加入一个业务层，即Service，以使系统更加清晰。
+Dao对应数据库中的表，一个表一个Dao；Service对应模块，一个Service一个模块，
+因为一个模块一般有多个表，所以在一个Service中一般需要调用多个Dao。
+这种标准的四层架构的问题主要在于Service层与Dao层的衔接上，因为Dao层是一个Dao一个实体类，
+所以可以使用泛型将对于单表的常用操作提取到基类的泛型Dao上，从而不必在各个子类Dao中再定义相应的方法，
+使开发效率大大提高；但由于Service层是一个Service对应多个表，所以无法使用泛型来指定它操作的是哪张表，
+假如在Action里要调用一个Dao的save方法，如果按照Action调用Service，Service再调用Dao的思路，
+就必须在Service中定义一个该表的Save方法，然后在这方法里再调用Dao的save方法；
+如果Action里还要调用该Dao的delete方法或是另一个Dao的方法，又得在该Service中定义相应的方法，
+再去调用Dao的方法，产生了大量鸡肋代码。另一种办法是将Dao注入到Action中，
+在Action中直接调用Dao的方法，这样一来Dao即注入到Service中也注入到Action中，容易引起注入的泛滥。
+这两种方法都有很明显的缺陷，目前还没有想到比较好的解决方法，目前的想法是如果开发的是小型系统的话，
+可以丢弃Service层，直接将Dao注入Action中，这样使系统更加敏捷高效，
+但实际上将Action层与Service层杂糅在了一起；如果开发的是大型系统，则可以设计一个通用的Dao层，
+让开发人员只去实现Service层，而只能调用Dao层，不能自己写Dao层，这样做使系统更加清晰，
+也更容易实现面向接口编程。我对这两种分层方式都不太满意，希望以后能找到更加完美的分层方法。

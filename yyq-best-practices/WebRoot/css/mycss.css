@@ -1,0 +1,54 @@
+button {
+	height: 32px;
+	border: #7EBF4F 1px solid;
+	padding: 2px;
+	filter:
+		progid:DXImageTransform.Microsoft.Gradient(GradientType=0,
+		StartColorStr=#ffffff, EndColorStr=#B3D997);
+	font-size: 18px;
+	cursor: hand;
+	color: black;
+}
+label {
+	font-size: 18pt;
+	font-weight: bold;
+	color: red;
+}
+a {
+	color: #0000FF; /*已访问不变色*/
+	text-decoration: none; /*已访问没有下划线*/
+}
+a:visited {
+	color: #0000FF; /*已访问不变色*/
+	text-decoration: none; /*已访问没有下划线*/
+}
+/*==================一级目录===================*/
+#nav {
+	margin:0px;
+	width: 180px;
+	line-height: 24px; /*行高*/
+	list-style-type: none; /*禁止列表风格*/
+	text-align: left; /*定义整个ul菜单的行高和背景色*/
+}
+#nav a {
+	width: 180px;
+	display: block;
+	text-align: center; /*Width(一定要)，否则下面的Li会变形*/
+}
+#nav li {
+	background: url(images/li.gif) no-repeat; /*一级目录的背景色*/
+	float:left;
+}
+
+/*==================二级目录===================*/
+#nav li ul {
+	list-style: none;
+	margin:0px;
+}
+#nav li ul li {
+	background: #ecf6fc; /*二级目录的背景色*/
+	border: #3e83c9 1px solid; /*二级目录的边框颜色*/
+}
+#nav li ul a:hover {
+	background: #bcd4ec; /* 二级onmouseover的背景色*/
+}

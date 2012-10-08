@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" backgroundGradientAlphas="[0.45, 0.45]" backgroundGradientColors="[#0000FF, #00FF00]">
+<mx:Script>
+	<![CDATA[
+		public var num1:Number=-1;
+		public var num2:Number=-1;
+		public var op:String='';
+		public function num(num:Number):void{
+			if(op==''){
+				if(num1==-1){
+					num1=num;
+				}else{
+					num1=num1*10+num;
+				}
+				res.text=String(num1);
+			}else{
+				if(num2==-1){
+					num2=num;
+				}else{
+					num2=num2*10+num;
+				}
+				res.text=String(num2);
+			}
+		}
+		public function op_in(op_in:String):void{
+			num1=parseInt(res.text);
+			op=op_in;
+		}
+		public function init():void{
+			num1=0;
+			num2=0;
+			op='';
+			res.text='0';
+		}
+		public function result():void{
+			if((num1!=-1)&&(num2!=-1)&&(op!='')){
+				switch (op){
+					case '+':
+						num1=num1+num2;
+						break;
+					case '-':
+						num1=num1-num2;
+						break;
+					case '*':
+						num1=num1*num2;
+						break;
+					case '/':
+						num1=num1/num2;
+						break;
+				}
+				res.text=String(num1);
+				num1=-1;
+				num2=-1;
+				op='';
+			}
+		}
+	]]>
+</mx:Script>
+
+<mx:Glow id="glow" duration="2000" alphaFrom="0.8" alphaTo="0.2"
+	blurXFrom="0.0" blurXTo="100.0" blurYFrom="0.0" blurYTo="100.0" color="0x360135"/>
+
+	<mx:Grid x="89.5" y="105" width="426" height="428" fontSize="20">
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="1" width="100" height="100" id="button1" click="num(1)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="2" width="100" height="100" id="button2" click="num(2)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button width="100" height="100" id="button3" label="3" click="num(3)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="+" width="100" height="100" id="op_jia" click="op_in('+')" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="4" width="100" height="100" id="button4" click="num(4)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="5" width="100" height="100" id="button5" click="num(5)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="6" width="100" height="100" id="button6" click="num(6)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="-" width="100" height="100" id="op_jian" click="op_in('-')" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="7" width="100" height="100" id="button7" click="num(7)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="8" width="100" height="100" id="button8" click="num(8)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="9" width="100" height="100" id="button9" click="num(9)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="*" width="100" height="100" id="op_cheng" click="op_in('*')" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+		</mx:GridRow>
+		<mx:GridRow width="100%" height="100%">
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="清除" width="100" height="100" id="clean" click="init()" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="0" width="100" height="100" id="button0" click="num(0)" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="=" width="100" height="100" id="end" click="result()" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+			<mx:GridItem width="100%" height="100%">
+				<mx:Button label="/" width="100" height="100" id="op_chu" click="op_in('/')" rollOverEffect="{glow}"/>
+			</mx:GridItem>
+		</mx:GridRow>
+	</mx:Grid>
+	<mx:Label x="89.5" y="30" width="426" height="76" alpha="1.0" textAlign="right" color="#FF0000" id="res" fontSize="20" text="0"/>
+</mx:Application>

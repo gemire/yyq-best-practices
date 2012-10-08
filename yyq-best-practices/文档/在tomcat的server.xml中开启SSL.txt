@@ -1,0 +1,7 @@
+<Connector 
+           port="8443" minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true" 
+           acceptCount="100"  maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           keystoreFile="c:/tomcat.keystore" keystorePass="password"
+           clientAuth="false" sslProtocol="TLS"/>
