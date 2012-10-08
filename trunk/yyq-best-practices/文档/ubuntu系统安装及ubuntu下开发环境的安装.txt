@@ -1,0 +1,15 @@
+﻿安装ubuntu系统：
+利用wubi在winxp下安装ubuntu，在安装ubuntu时为默认的Administrator用户创建密码，
+用Administrator用户进入ubuntu系统后在应用程序-附件-终端中输入以下命令为root用户创建密码：sudo passwd root。
+成功创建密码后便能以root用户登录ubuntu系统。
+
+ubuntu下S2SH开发环境的搭建：
+1：安装JDK（jdk-6u21-linux-i586.bin）；
+通过以下命令将我们安装的jdk加入java选单：
+update-alternatives --install /usr/bin/java java /home/administrator/jdk1.6.0_21/bin/java 300
+update-alternatives --install /usr/bin/javac javac /home/administrator/jdk1.6.0_21/bin/javac 300
+2：安装myeclipse（myeclipse-8.5.0-linux-gtk-x86.tgz）；
+3：将eclipse语言包解压到/root/Genuitec/MyEclipse 8.5/dropins下；
+4：安装mysql：在终端中运行以下命令安装MySql：apt-get install mysql-server；
+5：安装mysql客户端工具navicat；
+6：解压tomcat（apache-tomcat-6.0.29.tar.gz）

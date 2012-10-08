@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:viewStackEffects="org.efflex.mx.viewStackEffects.*" layout="absolute">
+	<viewStackEffects:FlipPapervision3D id="effect2" direction="left"/>
+	<viewStackEffects:FlipPapervision3D id="effect15" direction="right"/>
+	<viewStackEffects:FlipPapervision3D id="effect16" direction="down"/>
+	<viewStackEffects:FlipPapervision3D id="effect17" direction="up"/>
+	
+	<mx:Glow id="glow" duration="1000" 
+
+        alphaFrom="0.6" alphaTo="0.2" 
+
+        blurXFrom="0.0" blurXTo="50.0" 
+
+        blurYFrom="0.0" blurYTo="50.0" 
+
+        color="0xffffff"/>
+
+
+	
+	<mx:Button 
+		id="skin" 
+		label="3D Skin"
+		rollOverEffect="{glow}"/>
+	
+</mx:Application>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="flexJava.getSessionValue('username')" backgroundGradientAlphas="[0.5, 0.5]" backgroundGradientColors="[#00FFFF, #0000FB]">
+	
+	<mx:Script>
+		<![CDATA[
+			import conf.Conf;
+		]]>
+	</mx:Script>
+	
+	<mx:RemoteObject id="insuDao" destination="insuDao" endpoint="{Conf.amf}"/>
+	<mx:RemoteObject id="flexJava" destination="flexJava" endpoint="{Conf.amf}"/>
+	
+	<mx:Button x="45" y="120" label="统计自己的保单销售量" width="200" height="60" fontSize="15" click="insuDao.countInsu(username.text)"/>
+	<mx:Label id="sumLabel" x="300" y="120" width="150" height="60" textAlign="center" color="#FF0000" fontSize="15" alpha="1.0" text="{insuDao.countInsu.lastResult}"/>
+	<mx:Label x="45" y="46" text="您的用户名是：" height="60" width="200" textAlign="center" fontSize="15"/>
+	<mx:Label x="300" y="46" height="60" width="150" fontSize="15" textAlign="center" id="username" text="{flexJava.getSessionValue.lastResult}" color="#FF0000"/>
+	
+</mx:Application>

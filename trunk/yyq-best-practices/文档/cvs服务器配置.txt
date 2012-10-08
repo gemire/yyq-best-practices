@@ -1,0 +1,10 @@
+首先下载cvsnt服务器，例如我下的是cvsnt-server-2.5.05.3744，并安装。
+从程序-CVSNT-CVSNT Low Performance Community Server启动cvsnt服务器.
+首先在Repository configuration选项卡中添加代码库。选择好代码库位置，它会自动填上名称。
+接着在Compatibiliby Options选项卡中将Respond as cvs 1.11.2 to version r复选框勾上，勾上后才能在eclipse中访问到。
+最后在控制面板的用户账户中添加新账户，在eclipse中就以这些账户登陆。
+
+接着在eclipse的CVS资源库研究透视图中新建资源库位置，主机填CVS服务器ip，资源库路径填代码库名称，
+用户和密码填CVS服务器上的windows账号密码，连接类型用默认的pserver。
+
+至此，cvs服务器及eclipse cvs客户端配置完成。

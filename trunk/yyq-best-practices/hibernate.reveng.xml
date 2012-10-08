@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd" >
+
+<hibernate-reverse-engineering>
+	<table name="PERSON">
+		<primary-key>
+
+		</primary-key>
+		<column name="name"></column>
+	</table>
+<table name="DEPT">
+	<primary-key>
+		<key-column name="ID" jdbc-type="int"/>
+	</primary-key>
+	<column name="PERSON_ID" jdbc-type="int"></column>
+</table>
+</hibernate-reverse-engineering>

@@ -1,0 +1,21 @@
+1：安装pl_sql Developer；
+2：解压instantclient-basic-win32-11.2.0.1.0.zip，假设解压到F:\instantclient_10_2；
+3：在pl_sql的工具-首选项的Oracle-连接中设置Oracle主目录名和OCI库，
+如F:\instantclient_11_2和F:\instantclient_11_2\oci.dll；
+4：在instantclient目录下建立sqlnet.ora文件，内容如下：
+SQLNET.AUTHENTICATION_SERVICES= (NTS)
+NAMES.DIRECTORY_PATH= (TNSNAMES, HOSTNAME, ONAMES)
+5：在instantclient目录下建立tnsnames.ora文件，内容如下：
+XMSTC_192.168.53.25 =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.53.25)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SID = XMSTC)
+      (SERVER = DEDICATED)
+    )
+  )
+其中“HOST = 192.168.53.25”、“PORT = 1521”、“SID = XMSTC”要根据实际情况修改；
+6：建立环境变量“TNS_ADMIN”，值为“F:\instantclient_11_2”，即声明instantclient所在目录；
+7：运行pl_sql，输入用户名和密码，连接oracle。

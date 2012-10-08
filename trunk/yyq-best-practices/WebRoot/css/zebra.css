@@ -1,0 +1,43 @@
+.stripeMe body {
+	background: #fff;
+}
+
+.stripeMe table {
+	border-collapse: collapse;
+	width: 80%;
+	margin: 24px;
+	font-size: 1.1em;
+}
+
+.stripeMe tr {
+	vertical-align: middle;
+}
+
+.stripeMe th {
+	background: #3e83c9;
+	color: #fff;
+	font-weight: bold;
+	padding: 2px 11px;
+	text-align: center;
+	border-right: 1px solid #fff;
+	line-height: 1.2;
+}
+
+.stripeMe td {
+	padding: 6px 11px;
+	text-align: center;
+	border-bottom: 1px solid #95bce2;
+	vertical-align: middle;
+}
+
+.stripeMe td * {
+	padding: 6px 11px;
+}
+
+.stripeMe tr.alt td {
+	background: #ecf6fc;
+}
+
+.stripeMe tr.over td {
+	background: #bcd4ec;
+}

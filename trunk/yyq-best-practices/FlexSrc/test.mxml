@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="410" height="310"
+borderColor="#9A9A9A" borderStyle="solid" backgroundColor="0xFFFFFF"
+horizontalScrollPolicy="off" verticalScrollPolicy="off"
+creationComplete="init()"
+xmlns:viewStackEffects="org.efflex.mx.viewStackEffects.*">
+<mx:Script>
+<![CDATA[
+import mx.controls.LinkButton;
+import mx.controls.SWFLoader;
+import mx.core.UIComponent;
+import mx.controls.Label;
+import mx.controls.Image;
+import mx.containers.Box;
+import mx.controls.Alert;
+import flash.net.URLLoader;
+import flash.net.URLRequest;
+import flash.net.URLLoaderDataFormat;
+
+private var bgswf:Class;
+private var zhizhen:Class;
+private var imgXml:XML;
+private var _xmlPath:String="";//加载xml的地址
+private var _delay:uint=1000;//轮播的时间间隔（5000毫秒）
+private var loadIndex:uint=1;//正在加载哪一张
+public var currentIndex:uint=0;//正在播放哪一张（第一张为0）
+private var effectNum:uint=18;//所有效果数目
+private var mytimer:Timer;
+
+private function init():void{
+System.useCodePage=true;
+mytimer=new Timer(_delay,5);
+mytimer.addEventListener(TimerEvent.TIMER_COMPLETE,onTimerComplete);
+if(_xmlPath!=""){
+var xmlLoader:URLLoader=new URLLoader();
+xmlLoader.addEventListener(ProgressEvent.PROGRESS,onLoadingXml);
+xmlLoader.addEventListener(Event.COMPLETE,onLoadedXml);
+xmlLoader.load(new URLRequest(_xmlPath));
+}else{
+loadBar.label="没有加载图片数据";
+}
+}
+private function onLoadingXml(event:ProgressEvent):void{
+var numPerc:Number = Math.round((Number(event.bytesLoaded) / Number(event.bytesTotal)) * 100);
+loadBar.setProgress(numPerc, 100);
+loadBar.label ="正在载入图片数据 "+numPerc+"%";
+loadBar.validateNow();
+}
+private function onLoadedXml(event:Event):void{
+imgXml=new XML(event.target.data);
+loadImg();
+}
+private function loadImg():void{
+if(loadIndex>imgXml.children().length()){//超过最后一张了
+//设置指针停在第一位置
+var zz:Image=new Image();
+zz.source=zhizhen;
+zz.name="zhiz";
+zz.y=10;
+zz.x=zzBox.width-imgXml.children().length()*26+1;
+zzBox.addChild(zz);
+loading.visible=false;//隐藏进度条
+vs.selectedIndex=0;
+resetTimer();//开始轮播
+}else{
+loadBar.setProgress(0,100);
+loadBar.label="正在载入第"+loadIndex+"张图片 0%";
+loadBar.validateNow();
+var image:SWFLoader=new SWFLoader();
+image.buttonMode=true;
+image.useHandCursor=true;
+image.addEventListener(MouseEvent.CLICK,onClick);
+image.addEventListener(ProgressEvent.PROGRESS,onLoading);
+image.addEventListener(Event.COMPLETE,onLoaded);
+image.load(imgXml.img.@path[loadIndex-1]);
+}
+}
+private function onClick(event:MouseEvent):void{
+navigateToURL(new URLRequest(imgXml.img.@url[currentIndex]),"_blank");
+}
+private function onLoading(event:ProgressEvent):void{
+var numPerc:Number = Math.round((Number(event.bytesLoaded) / Number(event.bytesTotal)) * 100);
+if(numPerc>99)numPerc=99;
+loadBar.setProgress(numPerc, 100);
+loadBar.label ="正在载入第"+loadIndex+"张图片 "+numPerc+"%";
+loadBar.validateNow();
+}
+private function onLoaded(event:Event):void{
+//将进度条设到起点
+loadBar.setProgress(99,100);
+loadBar.label="正在处理第"+loadIndex+"张图片……";
+loadBar.validateNow();
+//处理加载的图片
+var tempImg:SWFLoader=event.target as SWFLoader;
+if((tempImg.contentWidth/tempImg.contentHeight)>=(this.width-10)/(this.height-10)){
+//如果宽高比大于或等于场景的宽高比，按高的比例缩放
+tempImg.height=this.height-10;
+tempImg.width=Math.round(tempImg.contentWidth*(this.height-10)/tempImg.contentHeight);
+tempImg.x=-(tempImg.width-this.width+10)/2;//将图片水平居中
+}else{//如果宽高比小于场景的宽高比，按宽的比例缩放
+tempImg.width=this.width-10;
+tempImg.height=Math.round(tempImg.contentHeight*(this.width-10)/tempImg.contentWidth);
+tempImg.y=-(tempImg.height-this.height+10)/2;//将图片垂直居中
+}
+var box:Canvas=new Canvas();//新建一个容器
+box.width=this.width-10;
+box.height=this.height-10;
+box.horizontalScrollPolicy="off";
+box.verticalScrollPolicy="off";
+box.addChild(tempImg);//将图片加到容器内
+//添加标题和背景
+if(imgXml.img.@title[loadIndex-1]!="" && imgXml.img.@title[loadIndex-1]!=undefined){//没有标题就不加
+var bg:Image=new Image();
+bg.width=this.width-10;
+bg.height=35;
+bg.source=bgswf;
+box.addChild(bg);
+var l:Label=new Label();
+l.width=this.width-14;
+l.height=35;
+l.x=4;
+l.y=0;
+l.setStyle("color",0xFFFFFF);
+l.setStyle("fontSize",20);
+l.setStyle("fontWeight","bold");
+l.text=imgXml.img.@title[loadIndex-1];
+box.addChild(l);
+}
+box.x=4;
+box.y=4;
+vs.addChild(box);//将容器加到viewStack中
+//加载按钮
+var btBox:Box=new Box();
+btBox.width=25;
+btBox.height=16;
+btBox.setStyle("backgroundColor",0x9A9A9A);
+btBox.setStyle("backgroundAlpha",0.50);
+var bt:LinkButton=new LinkButton();
+bt.width=25;
+bt.height=16;
+bt.label=loadIndex.toString();
+bt.addEventListener(MouseEvent.CLICK,onBtClick);
+bt.setStyle("cornerRadius",0);
+bt.setStyle("color",0xFFFFFF);
+bt.setStyle("textRollOverColor",0xFFFFFF);
+bt.setStyle("textSelectedColor",0xFFFFFF);
+bt.setStyle("rollOverColor",0xFF0000);
+bt.setStyle("selectionColor",0xFF0000);
+bt.setStyle("paddingLeft",1);
+bt.setStyle("paddingRight",1);
+bgBox.addChild(btBox);
+P_btBox.addChild(bt);
+loadIndex++;
+loadImg();//加载下一张
+}
+private function onTimerComplete(event:TimerEvent):void{
+var prveIndex:uint=currentIndex;
+currentIndex++;
+if(currentIndex>=imgXml.children().length())currentIndex=0;
+qiehuan(prveIndex,currentIndex);
+}
+private function qiehuan(fromIndex:uint,toIndex:uint):void{
+var box_prve:Canvas=vs.getChildAt(fromIndex) as Canvas;
+var box_next:Canvas=vs.getChildAt(toIndex) as Canvas;
+var randN:uint=randNum();
+switch(randN){
+case 1:
+box_prve.setStyle("hideEffect",effect1);
+box_next.setStyle("showEffect",effect1);
+break;
+case 2:
+box_prve.setStyle("hideEffect",effect2);
+box_next.setStyle("showEffect",effect2);
+break;
+case 3:
+box_prve.setStyle("hideEffect",effect3);
+box_next.setStyle("showEffect",effect3);
+break;
+case 4:
+box_prve.setStyle("hideEffect",effect4);
+box_next.setStyle("showEffect",effect4);
+break;
+case 5:
+box_prve.setStyle("hideEffect",effect5);
+box_next.setStyle("showEffect",effect5);
+break;
+case 6:
+box_prve.setStyle("hideEffect",effect6);
+box_next.setStyle("showEffect",effect6);
+break;
+case 7:
+box_prve.setStyle("hideEffect",effect7);
+box_next.setStyle("showEffect",effect7);
+break;
+case 8:
+box_prve.setStyle("hideEffect",effect8);
+box_next.setStyle("showEffect",effect8);
+break;
+case 9:
+box_prve.setStyle("hideEffect",effect9);
+box_next.setStyle("showEffect",effect9);
+break;
+case 10:
+box_prve.setStyle("hideEffect",effect10);
+box_next.setStyle("showEffect",effect10);
+break;
+case 11:
+box_prve.setStyle("hideEffect",effect11);
+box_next.setStyle("showEffect",effect11);
+break;
+case 12:
+box_prve.setStyle("hideEffect",effect12);
+box_next.setStyle("showEffect",effect12);
+break;
+case 13:
+box_prve.setStyle("hideEffect",effect13);
+box_next.setStyle("showEffect",effect13);
+case 14:
+break;
+case 15:
+box_prve.setStyle("hideEffect",effect15);
+box_next.setStyle("showEffect",effect15);
+break;
+case 16:
+box_prve.setStyle("hideEffect",effect16);
+box_next.setStyle("showEffect",effect16);
+break;
+case 17:
+box_prve.setStyle("hideEffect",effect17);
+box_next.setStyle("showEffect",effect17);
+default:
+}
+moveZhizhen(fromIndex,toIndex);
+vs.selectedIndex=toIndex;
+resetTimer();
+}
+private function onBtClick(event:MouseEvent):void{
+
+var fromIndex:uint=currentIndex;
+var bt:LinkButton=event.target as LinkButton;
+var toIndex:uint=P_btBox.getChildIndex(bt);
+if(toIndex!=fromIndex){
+currentIndex=toIndex;
+qiehuan(fromIndex,toIndex);
+}
+}
+private function resetTimer():void{
+if(mytimer.running==true)mytimer.stop();
+mytimer=new Timer(_delay,5);
+mytimer.addEventListener(TimerEvent.TIMER_COMPLETE,onTimerComplete);
+mytimer.start();
+}
+private function randNum():uint{
+return Math.floor(Math.random()*effectNum);
+}
+private function moveZhizhen(fromIndex:uint,toIndex:uint):void{
+myMove.xFrom=zzBox.width-(imgXml.children().length()-fromIndex)*26+1;
+myMove.xTo=zzBox.width-(imgXml.children().length()-toIndex)*26+1;
+var zz:Image=zzBox.getChildAt(0) as Image;
+myMove.target=zz;
+myMove.play();
+}
+//getter&setter
+public function set delay(value:uint):void{
+_delay=value;
+}
+public function get delay():uint{
+return _delay;
+}
+public function set xmlPath(value:String):void{
+_xmlPath=value;
+}
+public function get xmlPath():String{
+return _xmlPath;
+}
+]]>
+</mx:Script>
+
+<mx:Move id="myMove" duration="500"/>
+<mx:WipeLeft id="wipeOut" duration="1000"/>
+<mx:WipeRight id="wipeIn" duration="1000"/>
+<viewStackEffects:Fade id="effect1"/>
+<viewStackEffects:FlipPapervision3D id="effect2" direction="left"/>
+<viewStackEffects:FlipPapervision3D id="effect15" direction="right"/>
+<viewStackEffects:FlipPapervision3D id="effect16" direction="down"/>
+<viewStackEffects:FlipPapervision3D id="effect17" direction="up"/>
+<viewStackEffects:FadeZoom id="effect3"/>
+<viewStackEffects:FadeZoom id="effect10" verticalAlign="top" horizontalAlign="left"/>
+<viewStackEffects:FadeZoom id="effect11" verticalAlign="top" horizontalAlign="right"/>
+<viewStackEffects:FadeZoom id="effect12" verticalAlign="bottom" horizontalAlign="left"/>
+<viewStackEffects:FadeZoom id="effect13" verticalAlign="bottom" horizontalAlign="right"/>
+<viewStackEffects:Grid id="effect4"/>
+<viewStackEffects:GridZoom id="effect5"/>
+<viewStackEffects:Squash id="effect6"/>
+<viewStackEffects:Squash id="effect7" direction="right"/>
+<viewStackEffects:Squash id="effect8" direction="down"/>
+<viewStackEffects:Squash id="effect9" direction="up"/>
+<mx:ViewStack id="vs" x="4" y="4"/>
+<mx:Canvas left="4" bottom="4" right="4" horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%" height="30">
+<mx:HBox id="bgBox" horizontalScrollPolicy="off" verticalScrollPolicy="off" horizontalAlign="right" verticalAlign="bottom" horizontalGap="1" width="100%" height="30"/>
+<mx:Canvas id="zzBox" horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%" height="30"/>
+<mx:HBox id="P_btBox" horizontalScrollPolicy="off" verticalScrollPolicy="off" horizontalAlign="right" verticalAlign="bottom" horizontalGap="1" width="100%" height="30"/>
+</mx:Canvas>
+<mx:VBox id="loading" width="100%" height="100%" backgroundColor="0xFFFFFF" verticalAlign="middle" horizontalAlign="center">
+<mx:ProgressBar id="loadBar" width="70%" mode="manual" label="正在载入图片数据 0%" labelWidth="{loadBar.width}"
+fontSize="12" color="0x9A9A9A" textAlign="center"/>
+</mx:VBox>
+</mx:Canvas>

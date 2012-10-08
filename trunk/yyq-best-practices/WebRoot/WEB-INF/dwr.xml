@@ -1,0 +1,23 @@
+<dwr>
+<allow>
+	<create creator="spring" javascript="EmpDWR">
+		<param name="beanName" value="empDWR"/>
+	</create>
+	<create creator="spring" javascript="LoginDWR">
+		<param name="beanName" value="loginDWR"/>
+	</create>
+	<create creator="spring" javascript="MessageUtil">
+		<param name="beanName" value="messageUtil"/>
+	</create>
+	<convert match="sale.pojo.Carhost" converter="bean" >
+		<param name="include" value="id,carHostName,carHostCode,sex,age,address,linkTel" />
+	</convert>
+	<signatures>
+	<![CDATA[
+	import java.util.List;
+	import sale.pojo.Carhost;
+	public List<Carhost> findCarhost(String username);
+	]]>
+	</signatures>
+</allow>
+</dwr>

@@ -1,0 +1,42 @@
+1：分别在两台mysql服务器的my.ini文件的末尾加入以下代码：
+
+#Master start
+#日志输入地址 主要同步使用
+log-bin=F:\Program Files\MySQL\MySQL Server 5.5\MasterLog\masterLog
+#同步数据库
+binlog-do-db=ms
+#主机id 不能和从机id重复
+server-id=1
+#Master end
+
+#Slave start
+#需要同步的数据库
+replicate-do-db=ms
+#启用从库日志，这样可以进行链式复制
+log-slave-updates
+#从库是否只读，0表示可读写，1表示只读
+read-only=1
+#Slave end
+
+其中，两台mysql服务器的server-id不能一样。
+
+2：分别在两台mysql服务器执行如下代码建立一个用户并赋予相应权限用于Slave复制：
+GRANT REPLICATION SLAVE ON *.* TO 'slave'@'192.168.53.25' IDENTIFIED BY 'yyq'
+
+其中的ip地址根据实际修改。
+
+3：在mysql控制台里设置Master主机：
+CHANGE MASTER TO MASTER_HOST='192.168.53.9', MASTER_USER='slave', MASTER_PASSWORD='yyq',MASTER_LOG_FILE='masterLog.000001',MASTER_LOG_POS=107;
+
+其中的参数根据实际修改，可以使用show master status;命令查看MASTER_LOG_FILE、MASTER_LOG_POS
+
+
+4：启动Salve服务。
+slave start;
+
+双mysql数据库互为Master-Slave架构搭建成功后，在其中任何一台插入数据后都会自动复制到另一台，
+并且假如其中一台出现故障后，重启后，其自动会将其故障期间新增到另一台服务器的数据更新到本机上。
+
+在dataSource的url里可以写成如下形式：jdbc:mysql://localhost,192.168.53.25:3306/ms
+这样的话，当localhost出现故障后，程序就会自动切换去访问192.168.53.25，等localhost恢复后，
+程序会自动切换回localhost。

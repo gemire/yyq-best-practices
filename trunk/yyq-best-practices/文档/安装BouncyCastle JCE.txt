@@ -1,0 +1,3 @@
+1：将bcprov-jdk16-144.jar拷贝到D:\Program Files\Java\jdk1.6.0_13\jre\lib\ext下
+2：在D:\Program Files\Java\jdk1.6.0_13\jre\lib\security\java.security中
+在“security.provider.数字”后加上“security.provider.10=org.bouncycastle.jce.provider.BouncyCastleProvider”

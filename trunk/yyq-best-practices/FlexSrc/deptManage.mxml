@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="deptDao.findPropertyValues('name')">
+	
+	<mx:Script>
+		<![CDATA[
+			import conf.Conf;
+			
+			import flash.external.ExternalInterface;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.StringUtil;
+			
+			private var dataArray:ArrayCollection;
+			private function newUser():void{
+				//Flex中调用javascript
+				ExternalInterface.call("window.parent.document.location.href",Conf.url+"/userManage!newUser.action");
+				//var url:String="http://localhost:8080/YYQ/userManage!newUser.action";
+				//var urq:URLRequest=new URLRequest(url);
+				//navigateToURL(urq,"_self");
+				
+			}
+			private function updateUser():void{
+				if(userId.text=="") return;
+				ExternalInterface.call("window.parent.document.location.href",Conf.url+"/userManage!gotoUser.action?uid="+userId.text);
+			}
+			private function setUserId():void{
+				var uid:String=String(dataArray[userList.selectedIndex]);
+				userId.text=uid.substring(0,uid.indexOf("@"));
+			}
+			private function deleteDeptHandler(event:ResultEvent):void{
+				var str:String=event.result.toString();
+				if(str=="ok"){
+					Alert.show("删除部门成功！");
+					deptDao.findPropertyValues('name');
+				}else{
+					Alert.show("错误！不能删除非空部门！");
+				}
+			}
+			private function newDept():void{
+				var deptName:String=StringUtil.trim(newDeptName.text);
+				if(deptName!="") deptDao.newDept(deptName);
+			}
+			private function newDeptHandler(event:ResultEvent):void{
+				var str:String=event.result.toString();
+				if(str=="ok"){
+					Alert.show("新建部门成功！");
+					deptDao.findPropertyValues('name');
+				}else{
+					Alert.show("错误！部门已存在！");
+				}
+			}
+			private function deleteByIdHandler(event:ResultEvent):void{
+				deptDao.namesInDept(deptName.text);
+			}
+			private function findPropertyValuesHandler(event:ResultEvent):void{
+				deptName.dataProvider=event.result;
+				deptDao.namesInDept(deptName.text);
+			}
+			private function namesInDeptHandler(event:ResultEvent):void{
+				dataArray=event.result as ArrayCollection;
+				//Alert.show(dataArray[0]);
+				var nameArray:Array=new Array();
+				for(var i:int=0;i<dataArray.length;i++){
+					nameArray.push(dataArray[i].substring(dataArray[i].indexOf("@")+1));
+				}
+				userList.dataProvider=nameArray;
+			}
+		]]>
+	</mx:Script>
+	<!-- 使用https连接Dao时要加上https://localhost:8443 -->
+	<mx:RemoteObject id="deptDao" destination="deptDao" endpoint="{Conf.amf}">
+		<mx:method name="deleteDept" result="deleteDeptHandler(event)"/>
+		<mx:method name="newDept" result="newDeptHandler(event)"/>
+		<mx:method name="findPropertyValues" result="findPropertyValuesHandler(event)"/>
+		<mx:method name="namesInDept" result="namesInDeptHandler(event)"/>
+	</mx:RemoteObject>
+	<mx:RemoteObject id="userDao" destination="userDao" endpoint="{Conf.amf}">
+		<mx:method name="deleteById" result="deleteByIdHandler(event)"/>
+	</mx:RemoteObject>
+	<mx:RemoteObject id="authorityDao" destination="authorityDao" endpoint="{Conf.amf}"/>
+	
+	<mx:ComboBox x="80" y="110" id="deptName" color="#0000FF" fontSize="16" height="30" width="180" textAlign="left" close="deptDao.namesInDept(deptName.text)"></mx:ComboBox>
+	<mx:Label x="80" y="75" text="现有部门：" width="100" height="30" fontSize="16" textAlign="left" color="#FF0000"/>
+	<mx:List id="userList" x="80" y="210" width="180" height="208" fontSize="16" itemClick="setUserId()"></mx:List>
+	<mx:TextInput id="newDeptName" x="80" y="150" width="180" height="30"/>
+	<mx:Button x="280" y="150" label="新建" height="30" fontSize="16" width="60" click="newDept()"/>
+	<mx:Button x="280" y="210" label="修改" height="30" fontSize="16" width="60" click="updateUser()"/>
+	<mx:Button x="360" y="150" label="删除" height="30" fontSize="16" width="60" click="deptDao.deleteDept(deptName.text)"/>
+	<mx:Button x="360" y="210" label="新建" height="30" fontSize="16" width="60" click="newUser()"/>
+	<mx:Label x="360" y="260" width="360" height="30" textAlign="center" fontSize="16" id="userId" visible="true"/>
+	<mx:Button x="280" y="260" label="删除" width="60" height="30" fontSize="16" click="authorityDao.deleteByUid(parseInt(userId.text));userDao.deleteById(userId.text)"/>
+</mx:Application>

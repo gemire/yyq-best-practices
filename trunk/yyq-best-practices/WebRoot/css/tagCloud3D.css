@@ -1,0 +1,22 @@
+#tagCloud3D{
+	margin:0 auto;
+	height:600px;
+	width:800px;
+	overflow:hidden;
+	position:relative;
+	background-color: #000;
+}
+#tagCloud3D ul,
+#tagCloud3D li{
+	list-style:none;
+	margin:0;
+	padding:0;
+}
+#tagCloud3D a{
+	position:absolute;
+	text-decoration: none;
+	color:#666;
+}
+#tagCloud3D a:hover{
+	color:#ccc;
+}
